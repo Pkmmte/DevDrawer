@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.graphics.Outline;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -26,10 +27,13 @@ import android.widget.TextView;
 
 import com.owentech.DevDrawer.R;
 import com.owentech.DevDrawer.adapters.FilterListAdapter;
+import com.owentech.DevDrawer.adapters.WidgetCardAdapter;
 import com.owentech.DevDrawer.dialogs.AddPackageDialogFragment;
 import com.owentech.DevDrawer.dialogs.ChangeWidgetNameDialogFragment;
 import com.owentech.DevDrawer.dialogs.ChooseWidgetDialogFragment;
 import com.owentech.DevDrawer.events.ChangeWidgetEvent;
+import com.owentech.DevDrawer.listeners.CardItemClickListener;
+import com.owentech.DevDrawer.model.WidgetCard;
 import com.owentech.DevDrawer.utils.AppConstants;
 import com.owentech.DevDrawer.utils.DebugLog;
 import com.owentech.DevDrawer.utils.OttoManager;
@@ -41,13 +45,15 @@ import com.shamanland.fab.FloatingActionButton;
 import com.shamanland.fab.ShowHideOnScroll;
 import com.squareup.otto.Subscribe;
 
+import java.util.List;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 /**
  * Created by tonyowen on 09/07/2014.
  */
-public class WidgetsFragment extends Fragment implements View.OnClickListener, View.OnLongClickListener {
+public class WidgetsFragment extends Fragment implements View.OnClickListener, View.OnLongClickListener, CardItemClickListener {
 
     @InjectView(R.id.selectionLayout) RelativeLayout selectionLayout;
     @InjectView(R.id.selectionShadow) View selectionShadow;
@@ -58,6 +64,7 @@ public class WidgetsFragment extends Fragment implements View.OnClickListener, V
 
     private int[] mAppWidgetIds;
     private FilterListAdapter filterListAdapter;
+    private WidgetCardAdapter widgetCardAdapter;
     float originalFabY;
 
     @Override
@@ -107,11 +114,13 @@ public class WidgetsFragment extends Fragment implements View.OnClickListener, V
             }
         }
 
-        filterListAdapter = new FilterListAdapter(getActivity());
+//        filterListAdapter = new FilterListAdapter(getActivity());
+        List<WidgetCard> widgetCards = Database.getInstance(getActivity().getApplicationContext()).getAllWidgets();
+        widgetCardAdapter = new WidgetCardAdapter(getActivity(), widgetCards, this);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(filterListAdapter);
+        recyclerView.setAdapter(widgetCardAdapter);
 
         String widgetName = Database.getInstance(getActivity()).getWidgetNames(getActivity()).get(FilterListAdapter.currentWidgetId);
         if (AppConstants.UNNAMED.equals(widgetName)){
@@ -220,5 +229,10 @@ public class WidgetsFragment extends Fragment implements View.OnClickListener, V
     @Subscribe
     public void widgetRenamed(WidgetRenamedEvent event){
         currentWidgetName.setText(Database.getInstance(getActivity()).getWidgetNames(getActivity()).get(FilterListAdapter.currentWidgetId));
+    }
+
+    @Override
+    public void itemClicked(int filterId) {
+        Snackbar.make(this.getView(), "Clicked FilterId " + filterId, Snackbar.LENGTH_SHORT).show();
     }
 }

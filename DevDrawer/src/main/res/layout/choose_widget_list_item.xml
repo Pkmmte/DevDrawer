@@ -10,7 +10,7 @@
         android:fontFamily="sans-serif"
         android:textSize="20sp"
         android:gravity="left"
-        android:textColor="@color/devDrawerDark"
+        android:textColor="@color/primaryDark"
         android:padding="10dp"/>
 
 </LinearLayout>

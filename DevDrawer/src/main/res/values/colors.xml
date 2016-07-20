@@ -2,7 +2,10 @@
 <resources>
     <color name="app_name_light">#333333</color>
     <color name="app_name_dark">#EBEBEB</color>
-    <color name="devDrawerPrimary">#FFF57c00</color>
-    <color name="devDrawerDark">#CF5600</color>
+    <color name="primary">#2196F3</color>
+    <color name="primaryDark">#1976D2</color>
+    <color name="accent">#536DFE</color>
+    <color name="accent_50">#7b536dfe</color>
     <color name="lightViewBackground">#fffff3e0</color>
+    <color name="white">#FFFFFF</color>
 </resources>

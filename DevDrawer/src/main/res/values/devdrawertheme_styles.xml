@@ -4,12 +4,17 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="Theme.DevDrawer" parent="Theme.AppCompat.Light">
-        <item name="colorPrimary">#2196F3</item>
-        <item name="colorPrimaryDark">#1976D2</item>
-        <item name="colorAccent">#536DFE</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primaryDark</item>
+        <item name="colorAccent">@color/accent</item>
         <item name="android:textColorPrimary">#FFFFFF</item>
         <item name="colorControlNormal">#FFFFFF</item>
 
+    </style>
+
+    <style name="GreenButton" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:colorButtonNormal">#4CAF50</item>
+        <item name="android:textColor">@color/white</item>
     </style>
 
   <style name="EditTextDevDrawerTheme" parent="android:Widget.EditText">

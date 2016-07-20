@@ -6,18 +6,29 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 
 import com.owentech.DevDrawer.R;
+import com.owentech.DevDrawer.adapters.WidgetCardAdapter;
 import com.owentech.DevDrawer.appwidget.DDWidgetProvider;
 import com.owentech.DevDrawer.fragments.ShortcutFragment;
+import com.owentech.DevDrawer.listeners.CardItemClickListener;
+import com.owentech.DevDrawer.model.WidgetCard;
 import com.owentech.DevDrawer.utils.OttoManager;
 import com.owentech.DevDrawer.fragments.NotificationsFragment;
 import com.owentech.DevDrawer.fragments.WidgetsFragment;
@@ -37,9 +48,15 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 
-public class MainActivity extends AppCompatActivity implements TextWatcher {
+public class MainActivity extends AppCompatActivity implements TextWatcher, CardItemClickListener {
 
-    @InjectView(R.id.main_viewpager) ViewPager viewPager;
+//    @InjectView(R.id.main_viewpager) ViewPager viewPager;
+    @InjectView(R.id.recyclerView) RecyclerView recyclerView;
+    @InjectView(R.id.addWidgetOverlay) FrameLayout addWidgetOverlay;
+    @InjectView(R.id.widgetName) EditText widgetName;
+    @InjectView(R.id.save) Button save;
+    private WidgetCardAdapter widgetCardAdapter;
+
     WidgetsFragment widgetsFragment;
     NotificationsFragment notificationsFragment;
     ShortcutFragment shortcutFragment;
@@ -54,73 +71,90 @@ public class MainActivity extends AppCompatActivity implements TextWatcher {
         Database.getInstance(this).createTables();
         mAppWidgetIds = AppWidgetUtil.findAppWidgetIds(this);
 
-        viewPager.setAdapter(pagerAdapter);
+        List<WidgetCard> recyclerItems = Database.getInstance(this).getAllWidgets();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        widgetCardAdapter = new WidgetCardAdapter(this, recyclerItems, this);
+        recyclerView.setAdapter(widgetCardAdapter);
 
-        if (getIntent() != null) {
-            int appWidgetId = getIntent().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
-            if (appWidgetId != -1) {
-                for (int i = 0; i < mAppWidgetIds.length; i++) {
-                    if (appWidgetId == mAppWidgetIds[i]) {
-                        viewPager.setCurrentItem(i);
+        checkForNewWidget();
+    }
+
+    private void checkForNewWidget(){
+        if (getIntent() != null && getIntent().hasExtra(AppWidgetManager.EXTRA_APPWIDGET_ID)) {
+            final int appWidgetId = getIntent().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
+            Snackbar.make(recyclerView, "New Widget : " + appWidgetId, Snackbar.LENGTH_LONG).show();
+            addWidgetOverlay.setAlpha(0f);
+            addWidgetOverlay.setVisibility(View.VISIBLE);
+            addWidgetOverlay.animate().alpha(1f).setDuration(500);
+            widgetName.requestFocus();
+            save.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (widgetName.getText().length() != 0){
+                        Database.getInstance(MainActivity.this).addWidgetToDatabase(appWidgetId,
+                                widgetName.getText().toString());
+                        onBackPressed();
+                    }
+                    else{
+                        Snackbar.make(addWidgetOverlay, "Please enter a widget name", Snackbar.LENGTH_SHORT).show();
                     }
                 }
-
-                Database.getInstance(this).addWidgetToDatabase(appWidgetId, "");
-            }
+            });
         }
     }
 
-    private PagerAdapter pagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
-        @Override
-        public android.support.v4.app.Fragment getItem(int position) {
-
-            switch(position){
-                case 0:{
-                    if (widgetsFragment == null) {
-                        widgetsFragment = new WidgetsFragment();
-                    }
-                    return widgetsFragment;
-                }
-                case 1:{
-                    if (notificationsFragment == null) {
-                        notificationsFragment = new NotificationsFragment();
-                    }
-                    return notificationsFragment;
-                }
-                case 2:{
-                    if (shortcutFragment == null) {
-                        shortcutFragment = new ShortcutFragment();
-                    }
-                    return shortcutFragment;
-                }
-
-                default:
-                    return null;
-            }
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch(position){
-                case 0:{
-                    return getString(R.string.tab_widgets);
-                }
-                case 1:{
-                    return getString(R.string.tab_notifications);
-                }
-                case 2:{
-                    return getString(R.string.tab_shortcut);
-                }
-                default:
-                    return "";
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return 3;
-        }
-    };
+//    private PagerAdapter pagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
+//        @Override
+//        public android.support.v4.app.Fragment getItem(int position) {
+//
+//            switch(position){
+//                case 0:{
+//                    if (widgetsFragment == null) {
+//                        widgetsFragment = new WidgetsFragment();
+//                    }
+//                    return widgetsFragment;
+//                }
+//                case 1:{
+//                    if (notificationsFragment == null) {
+//                        notificationsFragment = new NotificationsFragment();
+//                    }
+//                    return notificationsFragment;
+//                }
+//                case 2:{
+//                    if (shortcutFragment == null) {
+//                        shortcutFragment = new ShortcutFragment();
+//                    }
+//                    return shortcutFragment;
+//                }
+//
+//                default:
+//                    return null;
+//            }
+//        }
+//
+//        @Override
+//        public CharSequence getPageTitle(int position) {
+//            switch(position){
+//                case 0:{
+//                    return getString(R.string.tab_widgets);
+//                }
+//                case 1:{
+//                    return getString(R.string.tab_notifications);
+//                }
+//                case 2:{
+//                    return getString(R.string.tab_shortcut);
+//                }
+//                default:
+//                    return "";
+//            }
+//        }
+//
+//        @Override
+//        public int getCount() {
+//            return 3;
+//        }
+//    };
 
     @Override
     public void onBackPressed() {
@@ -245,5 +279,10 @@ public class MainActivity extends AppCompatActivity implements TextWatcher {
         ArrayList<String> appList = new ArrayList<String>(appSet);
         Collections.sort(appList, collator);
         return appList;
+    }
+
+    @Override
+    public void itemClicked(int filterId) {
+        Snackbar.make(recyclerView, "Clicked filterId " + filterId, Snackbar.LENGTH_SHORT).show();
     }
 }

@@ -11,6 +11,7 @@ import android.util.SparseArray;
 import android.widget.Toast;
 
 import com.owentech.DevDrawer.appwidget.DDWidgetProvider;
+import com.owentech.DevDrawer.model.WidgetCard;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,11 @@ public class Database {
     SQLiteDatabase db;
     Context ctx;
     private static Database instance;
+
+    private final static String TABLE_FILTER = "devdrawer_filter";
+    private final static String TABLE_WIDGET = "devdrawer_widgets";
+
+    private final static String FIELD_WIDGET_ID = "widgetid";
 
     public static Database getInstance(Context context){
         if (instance == null){
@@ -258,6 +264,52 @@ public class Database {
         return packageCollections;
 
     }
+
+    public List<WidgetCard> getAllWidgets(){
+
+        connectDB();
+
+        //TODO: Make this one query
+        Cursor cursor = db.query(TABLE_WIDGET, null, null, null, null, null, null);
+        cursor.moveToFirst();
+
+        SparseArray<String> widgets = new SparseArray<>();
+
+        while (!cursor.isAfterLast()){
+            widgets.append(cursor.getInt(0), cursor.getString(1));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        closeDB();
+
+        List<WidgetCard> widgetCards = new ArrayList<>();
+
+        for (int i = 0; i < widgets.size(); i++) {
+            int widgetId = widgets.keyAt(i);
+            WidgetCard w = new WidgetCard(widgetId, widgets.get(widgetId));
+
+            connectDB();
+            Cursor c = db.query(TABLE_FILTER, null, null, null, null, null, null);
+//            Cursor c = db.query(TABLE_FILTER, null, FIELD_WIDGET_ID + "=" + widgets.keyAt(i), null, null, null, null, null);
+            c.moveToFirst();
+
+            SparseArray<String> filterIds = new SparseArray<>();
+            while (!c.isAfterLast()){
+                int filterId = c.getInt(0);
+                String packageFilter = c.getString(1);
+                filterIds.append(filterId, packageFilter);
+                c.moveToNext();
+            }
+            c.close();
+            closeDB();
+
+            w.setFilterItems(filterIds);
+            widgetCards.add(w);
+        }
+
+        return widgetCards;
+    }
+
 
     //////////////////////////////////////////////////////
     // Method to get all the entries in the filter table for given widgetId

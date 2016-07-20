@@ -7,12 +7,14 @@
 
     <item name="android:editTextStyle">@style/EditTextDevDrawerTheme</item>
 
-    <item name="android:buttonStyle">@style/ButtonDevDrawerTheme</item>
-
     <item name="android:imageButtonStyle">@style/ImageButtonDevDrawerTheme</item>
 	
 	<item name="android:autoCompleteTextViewStyle">@style/AutoCompleteDevDrawerTheme</item>
 
+    <item name="android:buttonStyle">@style/GreenButton</item>
+
   </style>
+
+
 
 </resources>
