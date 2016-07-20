@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,6 +16,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -42,7 +41,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Filter;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -50,23 +48,32 @@ import butterknife.InjectView;
 
 public class MainActivity extends AppCompatActivity implements TextWatcher, CardItemClickListener {
 
-//    @InjectView(R.id.main_viewpager) ViewPager viewPager;
+    private static final int VIEW_LIST = 0;
+    private static final int VIEW_ADD_WIDGET = 1;
+    private static final int VIEW_ADD_FILTER = 2;
+
     @InjectView(R.id.recyclerView) RecyclerView recyclerView;
     @InjectView(R.id.addWidgetOverlay) FrameLayout addWidgetOverlay;
     @InjectView(R.id.widgetName) EditText widgetName;
     @InjectView(R.id.save) Button save;
+    @InjectView(R.id.addFilterOverlay) FrameLayout addFilterOverlay;
+    @InjectView(R.id.packageFilter) AutoCompleteTextView packageFilter;
+    @InjectView(R.id.saveFilter) Button saveFilter;
+    @InjectView(R.id.addButton) FloatingActionButton addButton;
     private WidgetCardAdapter widgetCardAdapter;
 
     WidgetsFragment widgetsFragment;
     NotificationsFragment notificationsFragment;
     ShortcutFragment shortcutFragment;
     private int[] mAppWidgetIds;
+    private int currentView;
 
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
+        currentView = VIEW_LIST;
 
         Database.getInstance(this).createTables();
         mAppWidgetIds = AppWidgetUtil.findAppWidgetIds(this);
@@ -78,12 +85,21 @@ public class MainActivity extends AppCompatActivity implements TextWatcher, Card
         recyclerView.setAdapter(widgetCardAdapter);
 
         checkForNewWidget();
+
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                currentView = VIEW_ADD_FILTER;
+                showAddFilter();
+            }
+        });
     }
 
     private void checkForNewWidget(){
         if (getIntent() != null && getIntent().hasExtra(AppWidgetManager.EXTRA_APPWIDGET_ID)) {
             final int appWidgetId = getIntent().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
             Snackbar.make(recyclerView, "New Widget : " + appWidgetId, Snackbar.LENGTH_LONG).show();
+            currentView = VIEW_ADD_WIDGET;
             addWidgetOverlay.setAlpha(0f);
             addWidgetOverlay.setVisibility(View.VISIBLE);
             addWidgetOverlay.animate().alpha(1f).setDuration(500);
@@ -104,79 +120,58 @@ public class MainActivity extends AppCompatActivity implements TextWatcher, Card
         }
     }
 
-//    private PagerAdapter pagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
-//        @Override
-//        public android.support.v4.app.Fragment getItem(int position) {
-//
-//            switch(position){
-//                case 0:{
-//                    if (widgetsFragment == null) {
-//                        widgetsFragment = new WidgetsFragment();
-//                    }
-//                    return widgetsFragment;
-//                }
-//                case 1:{
-//                    if (notificationsFragment == null) {
-//                        notificationsFragment = new NotificationsFragment();
-//                    }
-//                    return notificationsFragment;
-//                }
-//                case 2:{
-//                    if (shortcutFragment == null) {
-//                        shortcutFragment = new ShortcutFragment();
-//                    }
-//                    return shortcutFragment;
-//                }
-//
-//                default:
-//                    return null;
-//            }
-//        }
-//
-//        @Override
-//        public CharSequence getPageTitle(int position) {
-//            switch(position){
-//                case 0:{
-//                    return getString(R.string.tab_widgets);
-//                }
-//                case 1:{
-//                    return getString(R.string.tab_notifications);
-//                }
-//                case 2:{
-//                    return getString(R.string.tab_shortcut);
-//                }
-//                default:
-//                    return "";
-//            }
-//        }
-//
-//        @Override
-//        public int getCount() {
-//            return 3;
-//        }
-//    };
+    private void showAddFilter(){
+        addFilterOverlay.setAlpha(0f);
+        addFilterOverlay.setVisibility(View.VISIBLE);
+        addFilterOverlay.animate().alpha(1f).setDuration(500);
+        packageFilter.requestFocus();
+    }
+
+    private void hideAddFilter(){
+        addFilterOverlay.animate().alpha(0f).setDuration(500).withEndAction(new Runnable() {
+            @Override
+            public void run() {
+                addFilterOverlay.setVisibility(View.GONE);
+            }
+        });
+    }
 
     @Override
     public void onBackPressed() {
 
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-        if (extras != null) {
-            appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        switch (currentView){
+            case VIEW_ADD_FILTER:{
+                hideAddFilter();
+                currentView = VIEW_LIST;
+                break;
+            }
+            case VIEW_LIST:{
+                super.onBackPressed();
+                break;
+            }
+            case VIEW_ADD_WIDGET:{
+                Intent intent = getIntent();
+                Bundle extras = intent.getExtras();
+                int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+                if (extras != null) {
+                    appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+                }
+
+                if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                    AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+                    RemoteViews widget = DDWidgetProvider.getRemoteViews(this, appWidgetId);
+                    appWidgetManager.updateAppWidget(appWidgetId, widget);
+                    Intent resultValue = new Intent();
+                    resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+                    setResult(RESULT_OK, resultValue);
+                    finish();
+                }
+
+                super.onBackPressed();
+            }
         }
 
-        if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-            RemoteViews widget = DDWidgetProvider.getRemoteViews(this, appWidgetId);
-            appWidgetManager.updateAppWidget(appWidgetId, widget);
-            Intent resultValue = new Intent();
-            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            setResult(RESULT_OK, resultValue);
-            finish();
-        }
 
-        super.onBackPressed();
     }
 
     @Override
@@ -231,13 +226,11 @@ public class MainActivity extends AppCompatActivity implements TextWatcher, Card
         context.sendBroadcast(intent);
     }
 
-
     @Override
     protected void onStop() {
         super.onStop();
         finish();
     }
-
 
     @Override
     public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -285,4 +278,6 @@ public class MainActivity extends AppCompatActivity implements TextWatcher, Card
     public void itemClicked(int filterId) {
         Snackbar.make(recyclerView, "Clicked filterId " + filterId, Snackbar.LENGTH_SHORT).show();
     }
+
+
 }

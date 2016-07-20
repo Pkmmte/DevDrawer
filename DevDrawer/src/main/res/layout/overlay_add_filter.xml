@@ -2,7 +2,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/addWidgetOverlay"
+    android:id="@+id/addFilterOverlay"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/accent_50"
@@ -20,20 +20,20 @@
             android:orientation="vertical">
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/widgetNameTil"
+                android:id="@+id/packageFilterTil"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp">
 
-                <EditText
-                    android:id="@+id/widgetName"
+                <AutoCompleteTextView
+                    android:id="@+id/packageFilter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Widget Name"
                     />
             </android.support.design.widget.TextInputLayout>
 
-            <Button android:id="@+id/save"
+            <Button android:id="@+id/saveFilter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
