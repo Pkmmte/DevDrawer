@@ -9,6 +9,7 @@
     android:visibility="gone">
 
     <android.support.v7.widget.CardView
+        android:id="@+id/addFilterCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="@color/white"
@@ -29,7 +30,7 @@
                     android:id="@+id/packageFilter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Widget Name"
+                    android:hint="Package Filter"
                     />
             </android.support.design.widget.TextInputLayout>
 

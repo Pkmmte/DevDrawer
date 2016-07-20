@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements TextWatcher, Card
     @InjectView(R.id.widgetName) EditText widgetName;
     @InjectView(R.id.save) Button save;
     @InjectView(R.id.addFilterOverlay) FrameLayout addFilterOverlay;
+    @InjectView(R.id.addFilterCard) CardView addFilterCard;
     @InjectView(R.id.packageFilter) AutoCompleteTextView packageFilter;
     @InjectView(R.id.saveFilter) Button saveFilter;
     @InjectView(R.id.addButton) FloatingActionButton addButton;
@@ -122,13 +124,16 @@ public class MainActivity extends AppCompatActivity implements TextWatcher, Card
 
     private void showAddFilter(){
         addFilterOverlay.setAlpha(0f);
+        addFilterCard.setTranslationY(-addFilterCard.getMeasuredHeight());
         addFilterOverlay.setVisibility(View.VISIBLE);
-        addFilterOverlay.animate().alpha(1f).setDuration(500);
+        addFilterOverlay.animate().alpha(1f).setDuration(300);
+        addFilterCard.animate().setStartDelay(300).translationY(1f).setDuration(500);
         packageFilter.requestFocus();
     }
 
     private void hideAddFilter(){
-        addFilterOverlay.animate().alpha(0f).setDuration(500).withEndAction(new Runnable() {
+        addFilterCard.animate().translationY(-addFilterCard.getMeasuredHeight()).setDuration(500);
+        addFilterOverlay.animate().setStartDelay(500).alpha(0f).setDuration(300).withEndAction(new Runnable() {
             @Override
             public void run() {
                 addFilterOverlay.setVisibility(View.GONE);
