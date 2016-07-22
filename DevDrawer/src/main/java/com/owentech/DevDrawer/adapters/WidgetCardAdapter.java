@@ -9,7 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.owentech.DevDrawer.R;
-import com.owentech.DevDrawer.listeners.CardItemClickListener;
+import com.owentech.DevDrawer.interfaces.CardItemClickListener;
 import com.owentech.DevDrawer.model.WidgetCard;
 
 import java.util.List;

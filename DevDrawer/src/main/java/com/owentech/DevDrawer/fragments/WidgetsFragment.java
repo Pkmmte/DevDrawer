@@ -1,8 +1,6 @@
 package com.owentech.DevDrawer.fragments;
 
-import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.graphics.Outline;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -11,17 +9,14 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -32,17 +27,14 @@ import com.owentech.DevDrawer.dialogs.AddPackageDialogFragment;
 import com.owentech.DevDrawer.dialogs.ChangeWidgetNameDialogFragment;
 import com.owentech.DevDrawer.dialogs.ChooseWidgetDialogFragment;
 import com.owentech.DevDrawer.events.ChangeWidgetEvent;
-import com.owentech.DevDrawer.listeners.CardItemClickListener;
+import com.owentech.DevDrawer.interfaces.CardItemClickListener;
 import com.owentech.DevDrawer.model.WidgetCard;
 import com.owentech.DevDrawer.utils.AppConstants;
-import com.owentech.DevDrawer.utils.DebugLog;
 import com.owentech.DevDrawer.utils.OttoManager;
 import com.owentech.DevDrawer.events.PackageAddedEvent;
 import com.owentech.DevDrawer.events.WidgetRenamedEvent;
 import com.owentech.DevDrawer.utils.AppWidgetUtil;
 import com.owentech.DevDrawer.utils.Database;
-import com.shamanland.fab.FloatingActionButton;
-import com.shamanland.fab.ShowHideOnScroll;
 import com.squareup.otto.Subscribe;
 
 import java.util.List;

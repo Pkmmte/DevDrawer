@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,17 +16,17 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 
+import com.owentech.DevDrawer.views.AddFilterView;
 import com.owentech.DevDrawer.R;
 import com.owentech.DevDrawer.adapters.WidgetCardAdapter;
 import com.owentech.DevDrawer.appwidget.DDWidgetProvider;
 import com.owentech.DevDrawer.fragments.ShortcutFragment;
-import com.owentech.DevDrawer.listeners.CardItemClickListener;
+import com.owentech.DevDrawer.interfaces.CardItemClickListener;
 import com.owentech.DevDrawer.model.WidgetCard;
 import com.owentech.DevDrawer.utils.OttoManager;
 import com.owentech.DevDrawer.fragments.NotificationsFragment;
@@ -35,6 +34,7 @@ import com.owentech.DevDrawer.fragments.WidgetsFragment;
 import com.owentech.DevDrawer.utils.AppConstants;
 import com.owentech.DevDrawer.utils.AppWidgetUtil;
 import com.owentech.DevDrawer.utils.Database;
+import com.owentech.DevDrawer.views.ContainerView;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -57,10 +57,11 @@ public class MainActivity extends AppCompatActivity implements TextWatcher, Card
     @InjectView(R.id.addWidgetOverlay) FrameLayout addWidgetOverlay;
     @InjectView(R.id.widgetName) EditText widgetName;
     @InjectView(R.id.save) Button save;
-    @InjectView(R.id.addFilterOverlay) FrameLayout addFilterOverlay;
-    @InjectView(R.id.addFilterCard) CardView addFilterCard;
-    @InjectView(R.id.packageFilter) AutoCompleteTextView packageFilter;
-    @InjectView(R.id.saveFilter) Button saveFilter;
+//    @InjectView(R.id.addFilterOverlay) FrameLayout addFilterOverlay;
+//    @InjectView(R.id.addFilterCard) CardView addFilterCard;
+//    @InjectView(R.id.packageFilter) AutoCompleteTextView packageFilter;
+//    @InjectView(R.id.saveFilter) Button saveFilter;
+    @InjectView(R.id.viewContainer) ContainerView viewContainer;
     @InjectView(R.id.addButton) FloatingActionButton addButton;
     private WidgetCardAdapter widgetCardAdapter;
 
@@ -123,60 +124,63 @@ public class MainActivity extends AppCompatActivity implements TextWatcher, Card
     }
 
     private void showAddFilter(){
-        addFilterOverlay.setAlpha(0f);
-        addFilterCard.setTranslationY(-addFilterCard.getMeasuredHeight());
-        addFilterOverlay.setVisibility(View.VISIBLE);
-        addFilterOverlay.animate().alpha(1f).setDuration(300);
-        addFilterCard.animate().setStartDelay(300).translationY(1f).setDuration(500);
-        packageFilter.requestFocus();
+        viewContainer.removeChild();
+        AddFilterView addFilterView = new AddFilterView(this);
+        viewContainer.addView(addFilterView);
+        viewContainer.setVisibility(View.VISIBLE);
+
+//        addFilterOverlay.setAlpha(0f);
+//        addFilterCard.setTranslationY(-addFilterCard.getMeasuredHeight());
+//        addFilterOverlay.setVisibility(View.VISIBLE);
+//        addFilterOverlay.animate().alpha(1f).setDuration(300);
+//        addFilterCard.animate().setStartDelay(300).translationY(1f).setDuration(500);
+//        packageFilter.requestFocus();
     }
 
     private void hideAddFilter(){
-        addFilterCard.animate().translationY(-addFilterCard.getMeasuredHeight()).setDuration(500);
-        addFilterOverlay.animate().setStartDelay(500).alpha(0f).setDuration(300).withEndAction(new Runnable() {
-            @Override
-            public void run() {
-                addFilterOverlay.setVisibility(View.GONE);
-            }
-        });
+        viewContainer.removeAllViews();
+//        addFilterCard.animate().translationY(-addFilterCard.getMeasuredHeight()).setDuration(500);
+//        addFilterOverlay.animate().setStartDelay(500).alpha(0f).setDuration(300).withEndAction(new Runnable() {
+//            @Override
+//            public void run() {
+//                addFilterOverlay.setVisibility(View.GONE);
+//            }
+//        });
     }
 
     @Override
     public void onBackPressed() {
 
-        switch (currentView){
-            case VIEW_ADD_FILTER:{
-                hideAddFilter();
-                currentView = VIEW_LIST;
-                break;
-            }
-            case VIEW_LIST:{
-                super.onBackPressed();
-                break;
-            }
-            case VIEW_ADD_WIDGET:{
-                Intent intent = getIntent();
-                Bundle extras = intent.getExtras();
-                int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-                if (extras != null) {
-                    appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
-                }
-
-                if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-                    RemoteViews widget = DDWidgetProvider.getRemoteViews(this, appWidgetId);
-                    appWidgetManager.updateAppWidget(appWidgetId, widget);
-                    Intent resultValue = new Intent();
-                    resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-                    setResult(RESULT_OK, resultValue);
-                    finish();
-                }
-
+        if (viewContainer.hasChildren()){
+            if (viewContainer.getChildId() == ContainerView.ADD_WIDGET){
+                saveWidget();
+                viewContainer.removeAllViews();
                 super.onBackPressed();
             }
+            viewContainer.removeAllViews();
+        }
+        else{
+            super.onBackPressed();
+        }
+    }
+
+    private void saveWidget(){
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+        if (extras != null) {
+            appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
 
-
+        if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+            RemoteViews widget = DDWidgetProvider.getRemoteViews(this, appWidgetId);
+            appWidgetManager.updateAppWidget(appWidgetId, widget);
+            Intent resultValue = new Intent();
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+            setResult(RESULT_OK, resultValue);
+            finish();
+        }
     }
 
     @Override

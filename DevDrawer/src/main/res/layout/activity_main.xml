@@ -24,6 +24,12 @@
         android:layout_marginBottom="16dp"/>
 
     <include layout="@layout/overlay_add_widget"/>
-    <include layout="@layout/overlay_add_filter"/>
+
+    <com.owentech.DevDrawer.views.ContainerView android:id="@+id/viewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        />
+    <!--<include layout="@layout/overlay_add_filter"/>-->
 
 </RelativeLayout>
